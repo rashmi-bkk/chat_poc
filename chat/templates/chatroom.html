@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Bootstrap demo</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-0evHe/X+R7YkIZDRvuzKMRqM+OrBnVFBL6DOitfPri4tjfHxaWutUpFmBp4vmVor" crossorigin="anonymous">
+  </head>
+  <body>
+    <div class="container">
+        <div class="row d-flex justify-content-center">
+            <div class="col-6">
+                <form>
+                    <div class="form-group">
+                        <label for="exampleFormControlTextArea1" class="h4 pt-5">Chatroom</label>
+                         <textarea id="chat-text" class="form-control" p cols="80" rows="10"></textarea> <br>
+                    </div>
+                    <div class="form-group">
+                        <input class="form-control" id="input" type="text">  </br>
+                    </div>
+                    <input class="btn btn-secondary btn-lg btn-block" id="submit" type="button" value="Send"> 
+                </form>
+
+            </div>
+         
+        </div>
+    </div>
+    {{room_name|json_script:"room-name"}}
+    {{request.user.username|json_script:"user_username"}}
+    <script>
+        const user_username=JSON.parse(document.getElementById('user_username').textContent);
+        const roomName=JSON.parse(document.getElementById('room-name').textContent);
+        document.querySelector('#submit').onclick=function(e){
+                const messageInputDom=document.querySelector('#input');
+                const message=messageInputDom.value;
+                chatSocket.send(JSON.stringify({
+                    'message':message,
+                    'username': user_username
+
+                }));
+                messageInputDom.value='';
+            };
+        const chatSocket=new WebSocket(
+            'ws://'  +
+            window.location.host +
+            '/ws/chat/' +
+            roomName +
+            '/'
+        );
+        chatSocket.onmessage=function(e){
+            const data=JSON.parse(e.data);
+            console.log(data)
+            document.querySelector('#chat-text').value+=(data.username + ': ' +
+            data.message + '\n')
+        }
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/js/bootstrap.bundle.min.js" integrity="sha384-pprn3073KE6tl6bjs2QrFaJGz5/SUsLqktiwsUTF55Jfv3qYSDhgCecCxMW52nD2" crossorigin="anonymous"></script>
+  </body>
+</html>
